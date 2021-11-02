@@ -5,24 +5,29 @@
 #include <mutex>
 #include <iostream>
 #include <map>
+#include <thread/shared_mutex.hpp>
 
 class read_cache {
 private:
     std::map<std::string,std::string> cache;
     mutable boost::shared_mutex cache_mutex;
 public:
-    // 二次检查锁定
-    static singleton *get_instance() {
-        std::call_once(flag, [] { instance = new singleton; });
-        return instance;
+    std::string  get(std::string key){
+      // add read lock
+      boost::shared_lock<boost::shared_mutex> s_lock(cache_mutex);
+      std::map<std::string,std::string>::const_iterator iter =  cache.find(key);
+      return (iter == cache.end()) ? NULL: iter->second;
     }
-    void do_something() {
-        std::cout << "do something" << std::endl;
+
+    void set(std::string key, std::string value){
+      // add write lock
+      std::lock_guard<boost::shared_mutex> x_lock(cache_mutex);
+      cache[key] = value;
     }
 };
-singleton *singleton::instance = nullptr;
-std::once_flag singleton::flag;
+
 int main() {
-    singleton *s = singleton::get_instance();
-    s->do_something();
+  read_cache r;
+  r.set("key1", "value1");
+  std::cout<< r.get("key1")<<std::endl;
 }
