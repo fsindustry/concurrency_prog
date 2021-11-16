@@ -23,3 +23,5 @@ add_executable(e8 e8_double_check_lock.cpp)
 add_executable(e9 e9_call_once.cpp)
 add_executable(e10 e10_shared_mutex.cpp)
 target_link_libraries(e10 boost_thread boost_system)
+
+add_executable(e11 e11_conditional_wait.cpp)
